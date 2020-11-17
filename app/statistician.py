@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import os
 import pandas as pd
 import requests
 
@@ -12,14 +11,14 @@ class Stats:
     def update(self):
         url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv"
         req = requests.get(url, allow_redirects=True)
-        open("data.csv", "wb").write(req.content)
+        open("data/data.csv", "wb").write(req.content)
 
     def set(self, region, query):
         self.region = region
         self.query = query
 
     def plot(self):
-        df = pd.read_csv("data.csv")
+        df = pd.read_csv("data/data.csv")
 
         df.drop("stato", axis=1, inplace=True)
         df.drop("codice_regione", axis=1, inplace=True)

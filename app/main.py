@@ -33,7 +33,7 @@ def main():
                     "Umbria",
                     "Valle d'Aosta",
                     "Veneto"
-                    ), size=(20, 1), enable_events=True, default_value="Abruzzo")],
+                    ), enable_events=True, default_value="Abruzzo")],
                 [gui.Text("What do you want to visualize?", size=(25, 1)), gui.InputCombo((
                     "Ricoverati con sintomi",
                     "Terapia intensiva",
@@ -49,12 +49,18 @@ def main():
                     "Totale casi",
                     "Tamponi",
                     "Casi testati"
-                    ), size=(20, 1), enable_events=True, default_value="Ricoverati con sintomi")],
+                    ), enable_events=True, default_value="Ricoverati con sintomi")],
                 [gui.Button("Plot"), gui.Button("Download data"), gui.Button("Close")]
             ]
 
     # initializing
-    window = gui.Window("Coronavirus Data", size=(500, 120)).Layout(layout)
+    window = gui.Window("Coronavirus Data",
+        auto_size_text=True,
+        auto_size_buttons=True,
+        icon=r"icons/favicon.ico",
+        size=(500, 120)
+        ).Layout(layout)
+
     stats = Stats("Abruzzo", "ricoverati_con_sintomi")
     data_check(stats)
 

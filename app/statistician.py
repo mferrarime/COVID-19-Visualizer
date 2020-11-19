@@ -1,3 +1,4 @@
+import math
 import matplotlib.dates as dates
 from matplotlib.dates import MO
 import matplotlib.pyplot as plt
@@ -39,6 +40,9 @@ class Stats:
         # take data only from the selected region
         df = df.set_index("denominazione_regione").filter(like=self.region, axis=0)
 
+        # set last_value_y, used to print text of the last value
+        last_value_y = df.iloc[-1][self.query]
+
         # set start and end data retrival date, create a new index and drop 'data'
         start = df.iloc[0]["data"]
         end = df.iloc[-1]["data"]
@@ -47,18 +51,18 @@ class Stats:
 
         # separate positive values from negative values
         pos = df.clip(lower=0)
-        neg = df.clip(upper=0)
+        neg = df.clip(upper=0.01)
 
-        # plot everything, except in case there are no negative values
+        # plot everything, throw exception when there are no negative values
         fig, ax = plt.subplots()
+        max, min = 0, 0
         try:
-            pos.plot.area(ax=ax, stacked=False, linewidth=1)
+            pos.plot.area(ax=ax, stacked=False, linewidth=1.1)
             max = pos.sum(axis=1).max()
 
-            neg.plot.area(ax=ax, stacked=False, linewidth=1)
+            neg.plot.area(ax=ax, stacked=False, linewidth=1.1)
             min = neg.sum(axis=1).min()
         except:
-            min = 0
             pass
 
         # set x axis
@@ -71,9 +75,18 @@ class Stats:
         ax.set_ylabel("value")
 
         # plot other details
-        ax.set_ylim([min, max])
-        ax.grid(color="k", linestyle="-", linewidth=0.1)
+        ax.set_ylim([min + math.ceil(min/10), max + math.ceil(max/10)])
+        ax.grid(color="gray", linestyle="-", linewidth=0.07)
+        ax.set_title(label=self.region, loc="center")
         ax.legend([self.query], loc="upper center")
         plt.gcf().autofmt_xdate()
-        plt.get_current_fig_manager().resize(1300, 600)
+        plt.get_current_fig_manager().resize(1500, 700)
+        plt.text(x=ax.get_xlim()[1] + 1.7,
+            y=last_value_y,
+            s=int(last_value_y),
+            color="gray",
+            fontsize=9,
+            fontweight="demi",
+            fontstyle="italic")
+
         plt.show()

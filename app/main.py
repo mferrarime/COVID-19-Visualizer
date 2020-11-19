@@ -9,7 +9,7 @@ def data_check(stats):
 
 def main():
     # setting
-    gui.theme("Topanga")
+    gui.theme("DarkTeal9")
     layout = [  [gui.Text("Remember to 'Download data' if you want more recent data")],
                 [gui.Text("Which region?", size=(25, 1)), gui.InputCombo((
                     "Abruzzo",
@@ -69,7 +69,7 @@ def main():
         event, values = window.read()
 
         if event == "Plot":
-            stats.set(values[0], values[1].lower().replace(" ", "_"))
+            stats.set(values[0], values[1])
             stats.plot()
         elif event == "Download data":
             stats.update()

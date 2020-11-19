@@ -22,6 +22,10 @@ class Stats:
         self.query = query
 
     def plot(self):
+        # save for the legend_label, then reformat for query
+        legend_label = self.query
+        self.query = legend_label.lower().replace(" ", "_")
+
         # clearing from unused data
         df = pd.read_csv("data/data.csv")
 
@@ -78,7 +82,7 @@ class Stats:
         ax.set_ylim([min + math.ceil(min/10), max + math.ceil(max/10)])
         ax.grid(color="gray", linestyle="-", linewidth=0.07)
         ax.set_title(label=self.region, loc="center")
-        ax.legend([self.query], loc="upper center")
+        ax.legend([legend_label], loc="upper center")
         plt.gcf().autofmt_xdate()
         plt.get_current_fig_manager().resize(1500, 700)
         plt.text(x=ax.get_xlim()[1] + 1.7,

@@ -1,5 +1,16 @@
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as gui
 from statistician import Stats
+
+def draw_figure(canvas, figure):
+    fig_canvas = FigureCanvasTkAgg(figure, canvas)
+    fig_canvas.draw()
+    fig_canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
+    return fig_canvas
+
+def delete_figure(figure):
+    figure.get_tk_widget().pack_forget()
+    figure.get_tk_widget().delete("all")
 
 def data_check(stats):
     try:
@@ -50,27 +61,35 @@ def main():
                     "Tamponi",
                     "Casi testati"
                     ), enable_events=True, default_value="Ricoverati con sintomi")],
-                [gui.Button("Plot"), gui.Button("Download data"), gui.Button("Close")]
+                [gui.Button("Plot"), gui.Button("Download data"), gui.Button("Close")],
+                [gui.Canvas(key="PLOT")]
             ]
 
     # initializing
     window = gui.Window("Coronavirus Data",
-        auto_size_text=True,
         auto_size_buttons=True,
+        finalize=True,
+        font="Helvetica 11",
         icon=r"icons/favicon.ico",
-        size=(500, 120)
-        ).Layout(layout)
+        layout=layout,
+        resizable=True
+        )
+    window.Maximize()
 
-    stats = Stats("Abruzzo", "ricoverati_con_sintomi")
+    stats = Stats("Abruzzo", "Ricoverati con sintomi")
     data_check(stats)
+
+    fig_canvas = draw_figure(window["PLOT"].TKCanvas, stats.plot())
 
     # looping
     while True:
         event, values = window.read()
+        fig_canvas.flush_events()
 
         if event == "Plot":
             stats.set(values[0], values[1])
-            stats.plot()
+            delete_figure(fig_canvas)
+            fig_canvas = draw_figure(window["PLOT"].TKCanvas, stats.plot())
         elif event == "Download data":
             stats.update()
         elif event == "Close" or event == gui.WIN_CLOSED:

@@ -7,8 +7,35 @@ import pandas as pd
 import requests
 
 class Stats:
+    __shared_state = {}
+
     def __init__(self, region, query):
+        self.__dict__ = self.__shared_state
+
         # setting region and query
+        self.region = region
+        self.query = query
+
+        # reading csv
+        self.df = pd.read_csv("data/data.csv")
+
+    def dropper(self, df):
+        # clearing from unused data, pass if already dropped
+        try:
+            df.drop("stato", axis=1, inplace=True)
+            df.drop("codice_regione", axis=1, inplace=True)
+            df.drop("lat", axis=1, inplace=True)
+            df.drop("long", axis=1, inplace=True)
+            df.drop("note", axis=1, inplace=True)
+
+            df["data"] = df["data"].str[0:10]
+            df.sort_values(by=["denominazione_regione", "data"])
+        except:
+            pass
+
+        return df
+
+    def set(self, region, query):
         self.region = region
         self.query = query
 
@@ -17,45 +44,32 @@ class Stats:
         req = requests.get(url, allow_redirects=True)
         open("data/data.csv", "wb").write(req.content)
 
-    def set(self, region, query):
-        self.region = region
-        self.query = query
-
     def plot(self):
         # save for the legend_label, then reformat for query
         legend_label = self.query
         self.query = legend_label.lower().replace(" ", "_")
 
-        # clearing from unused data
-        df = pd.read_csv("data/data.csv")
-
-        df.drop("stato", axis=1, inplace=True)
-        df.drop("codice_regione", axis=1, inplace=True)
-        df.drop("lat", axis=1, inplace=True)
-        df.drop("long", axis=1, inplace=True)
-        df.drop("note", axis=1, inplace=True)
-
-        df["data"] = df["data"].str[0:10]
-        df.sort_values(by=["denominazione_regione", "data"])
+        # check if the dataframe is cleared
+        dropped_df = self.dropper(self.df)
 
         # take only timestamp, region and query
-        df = df.filter(["data", "denominazione_regione", self.query], axis=1)
+        dropped_df = dropped_df.filter(["data", "denominazione_regione", self.query], axis=1)
 
         # take data only from the selected region
-        df = df.set_index("denominazione_regione").filter(like=self.region, axis=0)
+        dropped_df = dropped_df.set_index("denominazione_regione").filter(like=self.region, axis=0)
 
         # set last_value_y, used to print text of the last value
-        last_value_y = df.iloc[-1][self.query]
+        last_value_y = dropped_df.iloc[-1][self.query]
 
         # set start and end data retrival date, create a new index and drop 'data'
-        start = df.iloc[0]["data"]
-        end = df.iloc[-1]["data"]
-        df.set_index(pd.date_range(start=start, end=end, freq="D"), inplace=True)
-        df.drop("data", axis=1, inplace=True)
+        start = dropped_df.iloc[0]["data"]
+        end = dropped_df.iloc[-1]["data"]
+        dropped_df.set_index(pd.date_range(start=start, end=end, freq="D"), inplace=True)
+        dropped_df.drop("data", axis=1, inplace=True)
 
         # separate positive values from negative values
-        pos = df.clip(lower=0)
-        neg = df.clip(upper=0.01)
+        pos = dropped_df.clip(lower=0)
+        neg = dropped_df.clip(upper=0.01)
 
         # plot everything, throw exception when there are no negative values
         fig, ax = plt.subplots()
@@ -79,12 +93,12 @@ class Stats:
         ax.set_ylabel("value")
 
         # plot other details
-        ax.set_ylim([min + math.ceil(min/10), max + math.ceil(max/10)])
+        ax.set_ylim([min + math.ceil(min/5), max + math.ceil(max/5)])
         ax.grid(color="gray", linestyle="-", linewidth=0.07)
         ax.set_title(label=self.region, loc="center")
         ax.legend([legend_label], loc="upper center")
         plt.gcf().autofmt_xdate()
-        plt.get_current_fig_manager().resize(1500, 700)
+        fig.set_size_inches(20.0, 10.0)
         plt.text(x=ax.get_xlim()[1] + 1.7,
             y=last_value_y,
             s=int(last_value_y),
@@ -93,4 +107,4 @@ class Stats:
             fontweight="demi",
             fontstyle="italic")
 
-        plt.show()
+        return fig

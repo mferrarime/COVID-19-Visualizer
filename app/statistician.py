@@ -17,7 +17,11 @@ class Stats:
         self.query = query
 
         # reading csv
-        self.df = pd.read_csv("data/data.csv")
+        try:
+            self.df = pd.read_csv("data/data.csv")
+        except:
+            self.update()
+            self.df = pd.read_csv("data/data.csv")
 
     def dropper(self, df):
         # clearing from unused data, pass if already dropped

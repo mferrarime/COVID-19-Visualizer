@@ -46,7 +46,7 @@ def main():
                     "Umbria",
                     "Valle d'Aosta",
                     "Veneto"
-                    ), enable_events=True, default_value="Abruzzo")],
+                    ), enable_events=True, default_value="Italia")],
                 [gui.Text("What do you want to visualize?", size=(25, 1)), gui.InputCombo((
                     "Ricoverati con sintomi",
                     "Terapia intensiva",
@@ -62,7 +62,7 @@ def main():
                     "Totale casi",
                     "Tamponi",
                     "Casi testati"
-                    ), enable_events=True, default_value="Ricoverati con sintomi")],
+                    ), enable_events=True, default_value="Variazione totale positivi")],
                 [gui.Button("Plot"), gui.Button("Download data"), gui.Button("Close")],
                 [gui.Canvas(key="PLOT")]
             ]

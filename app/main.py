@@ -14,7 +14,8 @@ def delete_figure(figure):
 
 def data_check(stats):
     try:
-        file = open("data/data.csv")
+        file = open("data/region_data.csv")
+        file = open("data/nation_data.csv")
     except IOError:
         stats.update()
 
@@ -23,6 +24,7 @@ def main():
     gui.theme("DarkTeal6")
     layout = [  [gui.Text("Remember to 'Download data' if you want more recent data")],
                 [gui.Text("Which region?", size=(25, 1)), gui.InputCombo((
+                    "Italia",
                     "Abruzzo",
                     "Basilicata",
                     "Calabria",
@@ -76,7 +78,7 @@ def main():
         )
     window.Maximize()
 
-    stats = Stats("Abruzzo", "Ricoverati con sintomi")
+    stats = Stats("Italia", "Variazione totale positivi")
     data_check(stats)
 
     fig_canvas = draw_figure(window["PLOT"].TKCanvas, stats.plot())

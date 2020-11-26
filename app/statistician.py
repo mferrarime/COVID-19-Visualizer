@@ -16,14 +16,71 @@ class Stats:
         self.region = region
         self.query = query
 
-        # reading csv
-        try:
-            self.df = pd.read_csv("data/data.csv")
-        except:
-            self.update()
-            self.df = pd.read_csv("data/data.csv")
+    def set(self, region, query):
+        self.region = region
+        self.query = query
+
+    def update(self):
+        self.region_update()
+        self.nation_update()
+
+    def nation_update(self):
+        url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale.csv"
+        req = requests.get(url, allow_redirects=True)
+        open("data/nation_data.csv", "wb").write(req.content)
+
+    def region_update(self):
+        url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv"
+        req = requests.get(url, allow_redirects=True)
+        open("data/region_data.csv", "wb").write(req.content)
+
+    def df_selector(self, region):
+        if self.region == "Italia":
+            #reading csv
+            try:
+                df = pd.read_csv("data/nation_data.csv")
+            except:
+                self.nation_update()
+                df = pd.read_csv("data/nation_data.csv")
+
+            # check if the dataframe is cleared
+            df = self.dropper(df)
+        else:
+            try:
+                df = pd.read_csv("data/region_data.csv")
+            except:
+                self.region_update()
+                df = pd.read_csv("data/region_data.csv")
+
+            df = self.dropper(df)
+
+        return df
 
     def dropper(self, df):
+        if self.region == "Italia":
+            return self.nation_dropper(df)
+        else:
+            return self.region_dropper(df)
+
+    def nation_dropper(self, df):
+        # clearing from unused data, pass if already dropped
+        try:
+            df.drop("note", axis=1, inplace=True)
+
+            df["data"] = df["data"].str[0:10]
+            df.sort_values(by=["stato", "data"])
+
+            # take only timestamp and query
+            df = df.filter(["data", "stato", self.query], axis=1)
+
+            # index by 'stato'
+            df = df.set_index("stato")
+        except:
+            pass
+
+        return df
+
+    def region_dropper(self, df):
         # clearing from unused data, pass if already dropped
         try:
             df.drop("stato", axis=1, inplace=True)
@@ -34,33 +91,24 @@ class Stats:
 
             df["data"] = df["data"].str[0:10]
             df.sort_values(by=["denominazione_regione", "data"])
+
+            # take only timestamp, region and query
+            df = df.filter(["data", "denominazione_regione", self.query], axis=1)
+
+            # take data only from the selected region
+            df = df.set_index("denominazione_regione").filter(like=self.region, axis=0)
         except:
             pass
 
         return df
-
-    def set(self, region, query):
-        self.region = region
-        self.query = query
-
-    def update(self):
-        url = "https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-regioni/dpc-covid19-ita-regioni.csv"
-        req = requests.get(url, allow_redirects=True)
-        open("data/data.csv", "wb").write(req.content)
 
     def plot(self):
         # save for the legend_label, then reformat for query
         legend_label = self.query
         self.query = legend_label.lower().replace(" ", "_")
 
-        # check if the dataframe is cleared
-        dropped_df = self.dropper(self.df)
-
-        # take only timestamp, region and query
-        dropped_df = dropped_df.filter(["data", "denominazione_regione", self.query], axis=1)
-
-        # take data only from the selected region
-        dropped_df = dropped_df.set_index("denominazione_regione").filter(like=self.region, axis=0)
+        # select the right dataframe
+        dropped_df = self.df_selector(self.region)
 
         # set last_value_y, used to print text of the last value
         last_value_y = dropped_df.iloc[-1][self.query]

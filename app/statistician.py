@@ -127,10 +127,10 @@ class Stats:
         fig, ax = plt.subplots()
         max, min = 0, 0
         try:
-            pos.plot.area(ax=ax, stacked=False, linewidth=1.1)
+            pos.plot.area(ax=ax, color="firebrick", linewidth=1.1, stacked=False)
             max = pos.sum(axis=1).max()
 
-            neg.plot.area(ax=ax, stacked=False, linewidth=1.1)
+            neg.plot.area(ax=ax, color="royalblue", linewidth=1.1, stacked=False)
             min = neg.sum(axis=1).min()
         except:
             pass
@@ -149,7 +149,7 @@ class Stats:
         ax.grid(color="gray", linestyle="-", linewidth=0.07)
         ax.set_title(label=self.region, loc="center")
         ax.legend([legend_label], loc="upper center")
-        plt.gcf().autofmt_xdate()
+        fig.autofmt_xdate()
         fig.set_size_inches(20.0, 10.0)
         plt.text(x=ax.get_xlim()[1] + 1.7,
             y=last_value_y,

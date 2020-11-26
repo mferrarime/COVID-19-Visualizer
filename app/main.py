@@ -2,6 +2,10 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as gui
 from statistician import Stats
 
+# needed for Tkinter
+import matplotlib
+matplotlib.use("TkAgg")
+
 def draw_figure(canvas, figure):
     fig_canvas = FigureCanvasTkAgg(figure, canvas)
     fig_canvas.draw()

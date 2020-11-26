@@ -1,13 +1,10 @@
 import math
-import matplotlib
 import matplotlib.dates as dates
 from matplotlib.dates import MO
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import pandas as pd
 import requests
-
-matplotlib.use("TkAgg")
 
 class Stats:
     __shared_state = {}

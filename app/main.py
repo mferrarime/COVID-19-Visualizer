@@ -1,4 +1,4 @@
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import gc
 import PySimpleGUI as gui
 from statistician import Stats
 
@@ -6,20 +6,11 @@ from statistician import Stats
 import matplotlib
 matplotlib.use("TkAgg")
 
-def draw_figure(canvas, figure):
-    fig_canvas = FigureCanvasTkAgg(figure, canvas)
-    fig_canvas.draw()
-    fig_canvas.get_tk_widget().pack(side="top", fill="both", expand=1)
-    return fig_canvas
-
-def delete_figure(figure):
-    figure.get_tk_widget().pack_forget()
-    figure.get_tk_widget().delete("all")
-
 def data_check(stats):
     try:
         file = open("data/region_data.csv")
         file = open("data/nation_data.csv")
+        del file
     except IOError:
         stats.update()
 
@@ -68,7 +59,7 @@ def main():
                     "Casi testati"
                     ), enable_events=True, default_value="Variazione totale positivi")],
                 [gui.Button("Plot"), gui.Button("Download data"), gui.Button("Close")],
-                [gui.Canvas(key="PLOT")]
+                [gui.Image(key="PLOT", size=(20, 10))]
             ]
 
     # initializing
@@ -85,17 +76,18 @@ def main():
     stats = Stats("Italia", "Variazione totale positivi")
     data_check(stats)
 
-    fig_canvas = draw_figure(window["PLOT"].TKCanvas, stats.plot())
+    stats.plot()
+    window.Element("PLOT").Update(filename="data/fig.png")
 
     # looping
     while True:
         event, values = window.read()
-        fig_canvas.flush_events()
+        gc.collect()
 
         if event == "Plot":
             stats.set(values[0], values[1])
-            delete_figure(fig_canvas)
-            fig_canvas = draw_figure(window["PLOT"].TKCanvas, stats.plot())
+            stats.plot()
+            window.Element("PLOT").Update(filename="data/fig.png")
         elif event == "Download data":
             stats.update()
         elif event == "Close" or event == gui.WIN_CLOSED:

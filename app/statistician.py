@@ -1,3 +1,4 @@
+import gc
 import math
 import matplotlib.dates as dates
 from matplotlib.dates import MO
@@ -11,7 +12,7 @@ class Stats:
 
     def __init__(self, region, query):
         self.__dict__ = self.__shared_state
-
+        
         # setting region and query
         self.region = region
         self.query = query
@@ -159,4 +160,6 @@ class Stats:
             fontweight="demi",
             fontstyle="italic")
 
-        return fig
+        plt.savefig("data/fig.png", dpi=100, facecolor="snow", format="PNG")
+        plt.close("all")
+        gc.collect()
